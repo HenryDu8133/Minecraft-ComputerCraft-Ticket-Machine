@@ -25,7 +25,7 @@ This guide provides instructions on how to set up and operate the ticket machine
 ## 3. Running the Main Program
 
 1. Launch the `Ticket-Machine` main program.
-   - **Important**: Ensure that a display is connected. A recommended size is 2x3 blocks.
+   - **Important**: Ensure that a display and speaker is connected. A recommended size is 2x3 blocks.
 2. A graphical interface will appear on the screen, indicating that the system is ready for use.
 
 ---
