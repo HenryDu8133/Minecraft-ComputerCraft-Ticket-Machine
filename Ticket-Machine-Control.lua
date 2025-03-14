@@ -1,26 +1,26 @@
 
--- 配置文件路径
+-- Configuration file path
 local configPath = "ticket_config"
 
--- 初始配置
+-- Initial configuration
 local config = {
     stations = {"Station A", "Station B", "Station C", "Station D", "Station E", "Station F", "Station G", "Station H"},
     prices = {
-        normal = {},  -- 普通票价格表
-        express = {}  -- 快车票价格表
+        normal = {},  -- Regular ticket price list
+        express = {}  -- Express ticket price list
     }
 }
 
--- 当前选中的站点
+-- The currently selected site
 local selectedStation = 1
 
--- 保存配置
+-- Save configuration
 local function saveConfig()
     local file = fs.open(configPath, "w")
     file.write(textutils.serialize(config))
     file.close()
     
-    -- 创建更新标记文件
+    -- Create an update tag file
     local updateFile = fs.open(configPath .. "_update", "w")
     updateFile.write("update")
     updateFile.close()
@@ -28,7 +28,7 @@ local function saveConfig()
     print("Configuration saved and ticket machine updated")
 end
 
--- 显示站点列表
+-- Show site list
 local function showStations()
     term.clear()
     term.setCursorPos(1,1)
@@ -43,7 +43,7 @@ local function showStations()
     read()
 end
 
--- 添加新站点
+-- Add a new Site
 local function addStation()
     term.clear()
     term.setCursorPos(1,1)
@@ -52,7 +52,7 @@ local function addStation()
     local input = read()
     if input and #input > 0 then
         table.insert(config.stations, input)
-        -- 初始化新站点的价格表
+        -- Initializes the price list for the new site
         local idx = #config.stations
         config.prices.normal[idx] = {}
         config.prices.express[idx] = {}
@@ -68,7 +68,7 @@ local function addStation()
     sleep(1)
 end
 
--- 删除站点
+-- Delete site
 local function deleteStation()
     term.clear()
     term.setCursorPos(1,1)
@@ -95,7 +95,7 @@ local function deleteStation()
     sleep(1)
 end
 
--- 管理票价
+-- Managed fare
 local function managePrices()
     while true do
         term.clear()
@@ -141,7 +141,7 @@ local function managePrices()
     end
 end
 
--- 显示主菜单
+-- Show the main menu
 local function showMainMenu()
     term.clear()
     term.setCursorPos(1,1)
@@ -160,7 +160,7 @@ local function showMainMenu()
     print("\nPlease enter your choice (1-6):")
 end
 
--- 添加显示票价表功能
+-- Added the ability to display ticket tables
 local function showPriceTable()
     while true do
         term.clear()
@@ -188,7 +188,7 @@ local function showPriceTable()
             print(string.format("=== %s Price Table ===", choice == 1 and "Normal Train" or "Express Train"))
             term.setTextColor(colors.white)
             
-            -- 打印表头
+
             local priceTable = choice == 1 and config.prices.normal or config.prices.express
             write("From\\To |")
             for i, station in ipairs(config.stations) do
@@ -196,11 +196,11 @@ local function showPriceTable()
             end
             print()
             
-            -- 打印分隔线
+
             local line = string.rep("-", 10 * (#config.stations + 1))
             print(line)
             
-            -- 打印票价表
+
             for i, fromStation in ipairs(config.stations) do
                 term.setTextColor(colors.lime)
                 write(string.format("%-8s |", fromStation:sub(1,8)))
@@ -223,14 +223,14 @@ local function showPriceTable()
     end
 end
 
--- 加载配置
+
 local function loadConfig()
     if fs.exists(configPath) then
         local file = fs.open(configPath, "r")
         config = textutils.unserialize(file.readAll())
         file.close()
     else
-        -- 初始化价格表
+
         for i = 1, #config.stations do
             config.prices.normal[i] = {}
             config.prices.express[i] = {}
@@ -245,7 +245,7 @@ local function loadConfig()
     end
 end
 
--- 主循环（移到最后）
+
 loadConfig()
 while true do
     showMainMenu()
