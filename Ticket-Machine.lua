@@ -6,7 +6,7 @@ local w, h = mon.getSize()
 -- Get speaker peripheral
 local speaker = peripheral.find("speaker") or error("Speaker not found")
 
--- Configuration file path and redstone signal side settings
+-- Config file path and redstone signal side settings
 local configPath = "ticket_config"
 local coinInputSide = "right"
 local normalTicketSide = "back"
@@ -27,7 +27,7 @@ local selected = {
 }
 local currentPage = 1
 
--- Load configuration function (moved to the top)
+-- Load configuration function (moved to the front)
 local function loadConfig()
     if fs.exists(configPath) then
         local file = fs.open(configPath, "r")
@@ -40,10 +40,10 @@ local function loadConfig()
                 stations = config.stations
             end
 
-            -- Update ticket price configuration
+            -- Update price configuration
             if config.prices then
                 if type(config.prices.normal) == "table" and type(config.prices.express) == "table" then
-                    -- Update the ticket price between the selected stations
+                    -- Update current selected station price
                     if selected.start ~= selected.dest then
                         if config.prices.normal[selected.start] and config.prices.normal[selected.start][selected.dest] then
                             priceNormal = config.prices.normal[selected.start][selected.dest]
@@ -65,8 +65,8 @@ local function drawButton(x, y, text, bgColor, fgColor)
     mon.write(" " .. text .. " ")
 end
 
--- Page drawing function (moved after drawButton)
--- Modified drawStationPage function
+-- Page drawing function (moved to drawButton after)
+-- Modify drawStationPage function
 local function drawStationPage()
     -- Clear screen and set default background
     mon.setBackgroundColor(colors.black)
@@ -87,7 +87,7 @@ local function drawStationPage()
     mon.write(">> From: ")
     mon.write(string.rep("-", w - 8))  -- Title decoration line
 
-    -- Departure station buttons
+    -- Departure station button
     local row = 5
     local col = 7
     for i, station in ipairs(stations) do
@@ -111,7 +111,7 @@ local function drawStationPage()
     mon.write(">> To: ")
     mon.write(string.rep("-", w - 6))  -- Title decoration line
 
-    -- Destination station buttons
+    -- Destination station button
     row = toRow + 1
     col = 7
     for i, station in ipairs(stations) do
@@ -143,7 +143,7 @@ local function drawStationPage()
     return nil
 end
 
--- Modified drawTrainTypePage function
+-- Modify drawTrainTypePage function
 local function drawTrainTypePage()
     mon.setBackgroundColor(colors.black)
     mon.clear()
@@ -172,7 +172,7 @@ local function drawTrainTypePage()
         selected.type == 2 and colors.blue or colors.lightGray,
         selected.type == 2 and colors.white or colors.black)
 
-    -- Bottom button (remove decoration line)
+    -- Bottom button (removed decoration line)
     mon.setTextColor(colors.orange)
     mon.setBackgroundColor(colors.black)
     mon.setCursorPos(w - 6, 8)
@@ -237,9 +237,9 @@ local function handleStationPageTouch(x, y)
         col = col + #station + 3
     end
 
-    -- Update ticket prices after station selection
+    -- Update ticket price after station selection
     if selected.start ~= selected.dest then
-        loadConfig()  -- Reload configuration to update prices
+        loadConfig()  -- 重新加载配置以更新票价
     end
 
     -- Next button detection
@@ -255,7 +255,7 @@ local function drawCoinPage()
     mon.setBackgroundColor(colors.black)
     mon.clear()
 
-    -- Ticket top decoration
+    -- Small ticket top decoration
     mon.setTextColor(colors.white)
     mon.setCursorPos(1, 1)
     mon.write(string.rep("=", w))
@@ -264,7 +264,7 @@ local function drawCoinPage()
     mon.setCursorPos(1, 2)
     mon.write(string.rep("-", w))
 
-    -- Ticket information
+    -- Receipt information
     local currentTime = os.date("*t")
     mon.setCursorPos(2, 3)
     mon.write(string.format("Date: %04d-%02d-%02d", currentTime.year, currentTime.month, currentTime.day))
@@ -280,7 +280,7 @@ local function drawCoinPage()
     mon.setTextColor(colors.blue)
     mon.setCursorPos(2, 7)
     mon.write("To  : " .. stations[selected.dest])
-    mon.setTextColor(colors.yellow)  -- Modify: Change train type display color to yellow
+    mon.setTextColor(colors.yellow)  -- Modified: Changed train type display color to yellow
     mon.setCursorPos(2, 8)
     mon.write("Type: " .. (selected.type == 1 and "Normal Train" or "Express Train"))
     mon.setCursorPos(1, 9)
@@ -296,7 +296,7 @@ local function drawCoinPage()
     mon.setCursorPos(1, 12)
     mon.write(string.rep("-", w))
 
-    -- Coin insertion prompt
+    -- Coin insert prompt
     mon.setTextColor(colors.yellow)
     mon.setCursorPos(2, 13)
     mon.write("Please insert coins...")
@@ -360,6 +360,63 @@ while true do
                 speaker.playNote(instrument, volume or 1.0, note)
             end
             
+            -- Play success melody
+            local function playSuccessTune()
+                local melody = {
+                    -- Opening notes
+                    {instrument = "bit", note = 1.0, volume = 0.8},
+                    {instrument = "bit", note = 1.2, volume = 0.9},
+                    {instrument = "bit", note = 1.5, volume = 1.0},
+                    -- Rising main melody
+                    {instrument = "harp", note = 1.7, volume = 0.9},
+                    {instrument = "harp", note = 2.0, volume = 1.0},
+                    {instrument = "bell", note = 2.2, volume = 1.0},
+                    {instrument = "bell", note = 2.5, volume = 1.0},
+                    -- Cheerful counter melody
+                    {instrument = "bit", note = 2.0, volume = 0.9},
+                    {instrument = "bit", note = 2.2, volume = 1.0},
+                    {instrument = "bit", note = 2.5, volume = 1.0},
+                    {instrument = "bit", note = 2.2, volume = 0.9},
+                    -- Elegant transition
+                    {instrument = "chime", note = 2.0, volume = 0.9},
+                    {instrument = "chime", note = 2.2, volume = 1.0},
+                    {instrument = "chime", note = 2.5, volume = 1.0},
+                    -- Ending section
+                    {instrument = "bell", note = 2.2, volume = 0.9},
+                    {instrument = "bell", note = 2.5, volume = 1.0},
+                    {instrument = "bell", note = 2.0, volume = 0.8}
+                }
+                
+                -- Play main melody
+                for i, note in ipairs(melody) do
+                    if i <= 3 then
+                        sleep(0.12)  -- Slower opening
+                    elseif i <= 7 then
+                        sleep(0.08)  -- Medium tempo main melody
+                    elseif i <= 11 then
+                        sleep(0.06)  -- Faster counter melody
+                    else
+                        sleep(0.08)  -- Moderate ending
+                    end
+                    playNote(note.instrument, note.note, note.volume)
+                end
+                
+                -- Final triple chord
+                sleep(0.04)
+                playNote("bell", 2.5, 0.9)
+                playNote("chime", 2.0, 0.8)
+                playNote("harp", 1.5, 0.7)
+                sleep(0.02)
+                playNote("bit", 3.0, 0.6)  -- Final accent note
+            end
+
+            -- Coin sound effect
+            local function playCoinSound()
+                playNote("bell", 1.5, 1.0)  -- Adjusted for clearer sound
+                sleep(0.05)
+            end
+
+            -- Update coin display
             local function updateCoinDisplay()
                 local price = selected.type == 1 and priceNormal or priceExpress
                 mon.setTextColor(colors.red)
@@ -368,48 +425,6 @@ while true do
                 mon.setTextColor(colors.yellow)
                 mon.setCursorPos(2, 14)
                 mon.write(string.format("Remaining: %d coins", price - coins))
-            end
-            -- Coin insertion sound effect
-            local function playCoinSound()
-                playNote("bell", 1.5, 1.0)  -- Adjust to a crisper sound
-                sleep(0.05)
-            end
-            
-            -- Play success tune
-            local function playSuccessTune()
-                local melody = {
-                    -- Opening notes
-                    {instrument = "flute", note = 1.0, volume = 0.8},  -- Use flute for opening
-                    {instrument = "flute", note = 1.2, volume = 0.9},
-                    {instrument = "flute", note = 1.5, volume = 1.0},
-                    -- Rising melody
-                    {instrument = "harp", note = 1.5, volume = 0.9},   -- Harp melody
-                    {instrument = "harp", note = 1.7, volume = 1.0},
-                    {instrument = "harp", note = 2.0, volume = 1.0},
-                    -- Cheerful ending
-                    {instrument = "bell", note = 1.7, volume = 1.0},   -- Bell accents
-                    {instrument = "bell", note = 2.0, volume = 0.9},
-                    {instrument = "xylophone", note = 1.5, volume = 0.8}  -- Xylophone ending
-                }
-                
-                -- Play melody
-                for i, note in ipairs(melody) do
-                    if i <= 3 then
-                        sleep(0.12)  -- Slower opening
-                    elseif i <= 6 then
-                        sleep(0.09)  -- Medium tempo for melody
-                    else
-                        sleep(0.07)  -- Faster ending
-                    end
-                    playNote(note.instrument, note.note, note.volume)
-                end
-                
-                -- Ending chord
-                sleep(0.05)
-                playNote("harp", 2.0, 0.9)    -- Harp chord
-                playNote("bell", 1.5, 0.8)    -- Bell chord
-                sleep(0.03)
-                playNote("flute", 1.7, 0.7)   -- Flute ending
             end
 
             playCoinSound()
@@ -420,7 +435,7 @@ while true do
             local price = selected.type == 1 and priceNormal or priceExpress
             if coins >= price then
                 playSuccessTune()
-                -- Output the corresponding type of ticket
+                -- Output corresponding ticket type
                 if selected.type == 1 then
                     redstone.setOutput(normalTicketSide, true)
                     sleep(0.5)
@@ -431,7 +446,7 @@ while true do
                     redstone.setOutput(expressTicketSide, false)
                 end
                 
-                -- Add completion page drawing function
+                -- Draw completion page
                 local function drawCompletePage()
                     mon.setBackgroundColor(colors.green)  -- Set overall background to green
                     mon.clear()
@@ -450,7 +465,7 @@ while true do
                     mon.setCursorPos((w - 20) / 2, 4)
                     mon.write("Thank you for your purchase!")
                     
-                    mon.setTextColor(colors.yellow)       -- Yellow for ticket information
+                    mon.setTextColor(colors.yellow)       -- Yellow for ticket info
                     mon.setCursorPos(2, 6)
                     mon.write("From: " .. stations[selected.start])
                     mon.setCursorPos(2, 7)
@@ -462,14 +477,14 @@ while true do
                     mon.setTextColor(colors.white)
                     mon.setCursorPos(2, h-2)
                     mon.write("Returning to main menu...")
-                    mon.setBackgroundColor(colors.lime)   -- Button background in bright green
-                    mon.setTextColor(colors.black)        -- Button text in black
+                    mon.setBackgroundColor(colors.lime)   -- Bright green button background
+                    mon.setTextColor(colors.black)        -- Black text for button
                     mon.setCursorPos(w-6, h-2)
                     mon.write("Back >")
                 end
                 currentPage = 4
                 drawCompletePage()
-                timer = os.startTimer(5)  -- Automatically return after 5 seconds
+                timer = os.startTimer(5)  -- Return after 5 seconds
             end
             
             -- Wait for redstone signal to disappear
@@ -479,7 +494,7 @@ while true do
         end
     elseif event == "timer" and currentPage == 4 then
         if side == timer then
-            -- Automatically return
+            -- Auto return
             coins = 0
             lastCoinTime = os.epoch("local")
             selected.start = 1
@@ -508,3 +523,4 @@ while true do
     checkConfigUpdate()
     sleep(0.1)
 end
+
